@@ -56,6 +56,7 @@ fclose(infile);
 close all
 figure
 plotmesh(coords,ncoord,nnode,connect,nelem,elident,nelnodes,'g');
+title("Input mesh")
 
 %
 %============================ MAIN FEM ANALYSIS PROCEDURE ========================
@@ -102,7 +103,7 @@ plotmesh(coords,ncoord,nnode,connect,nelem,elident,nelnodes,'g');
 %
 
   defcoords = zeros(ndof,nnode); 
-  scalefactor = 1.0;
+  scalefactor = 3.0e10;
   for i = 1:nnode
     for j = 1:ndof
        defcoords(j,i) = coords(j,i) + scalefactor*dofs(ndof*(i-1)+j); 
@@ -111,6 +112,7 @@ plotmesh(coords,ncoord,nnode,connect,nelem,elident,nelnodes,'g');
 
  figure
  plotmesh(coords,ncoord,nnode,connect,nelem,elident,nelnodes,'g');
+ title("Deformed shape")
  hold on
  plotmesh(defcoords,ncoord,nnode,connect,nelem,elident,nelnodes,'r');  
   
@@ -128,29 +130,20 @@ end
 %    Currently coded either for plane strain, plane stress or general 3D.
 %
 function C = materialstiffness(ndof,ncoord,strain,materialprops)
-  UseRotatedC = true;
-  if UseRotatedC
-    angles = [45,45,45];
+  useCubicSymmetryStiffness = true;
+  if useCubicSymmetryStiffness
+    angles = [0,0,90];
       
-    C11 = 22.50;
-    C44 = 15.30;
-    C12 = 11.50;
+    C11 = 225.0e9; % [Pa]
+    C44 = 153.0e9; % [Pa]
+    C12 = 115.0e9; % [Pa]
 
     C = CubicSymmetryStiffness(C11, C44, C12);
-    %   for i=1:3
-    %       for j=1:3
-    %           for k=1:3
-    %               for l=1:3
-    %                   C(i,j,k,l) = C44*(i==k)*(j==l)+C12*(i==j)*(k==l)+(C11-C44-C12)*(i==k)*(j==l)*(i==j);
-    %               end
-    %           end
-    %       end
-    %   end
 
     C = AnglesToCm(angles, C);
     C = TwoDto4D(C);
   end
-  if UseRotatedC==false
+  if useCubicSymmetryStiffness==false
    mu = materialprops(1);
    nu = materialprops(2);
    
@@ -206,7 +199,6 @@ function C = materialstiffness(ndof,ncoord,strain,materialprops)
       end
     end
   end
-  C
 end
 %================= Material Stress ==================================
 %
@@ -1405,8 +1397,8 @@ end
        for j = 1 : ndof
          cellno = cellno + 1;
          dloads(j+2,i) = str2num(cellarray{1}{cellno});
-       end;
-    end;
+       end
+    end
     
  end
   function plotmesh(coords,ncoord,nnode,connect,nelem,elident,nelnodes,color)

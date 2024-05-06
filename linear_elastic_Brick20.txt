@@ -1,5 +1,5 @@
 No._material_props:    2
-    Shear_modulus:   10.
+    Shear_modulus:   200.0e9
     Poissons_ratio:  0.3
 No._coords_per_node:   3
 No._DOF_per_node:      3
